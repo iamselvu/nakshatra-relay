@@ -6,26 +6,25 @@ app.use(express.json());
 app.get('/nakshatra', async (req, res) => {
   const today = new Date();
   const payload = {
-    day: today.getDate(),
-    month: today.getMonth() + 1,
-    year: today.getFullYear(),
-    lat: req.query.lat || 11.3164,
-    lon: req.query.lon || 77.4342,
-    tzone: req.query.tz || 5.5
+    api_key: '596a3157-c4e0-5604-85b7-8267c944679c',
+    date: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`,
+    lat: req.query.lat || '11.3164',     // Nambiyur
+    lon: req.query.lon || '77.4342',
+    tzone: req.query.tz || '5.5'
   };
+
   try {
-    const resp = await fetch('https://freeastrologyapi.com/api/v1/complete-panchang', {
+    const response = await fetch('https://vedicastroapi.com/api/panchang/basic', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': 'n0UYvDWD9h1fu0AQwzhA51IMUIABgrFJ87ZamUGH'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const json = await resp.json();
-    res.json({ nakshatra: json.nakshatra || json.nakshatra_name });
+    const json = await response.json();
+    res.json({
+      nakshatra: json.nakshatra?.name || json.nakshatra // supports both possible formats
+    });
   } catch (e) {
-    res.json({ error: "API call failed", detail: e.toString() });
+    res.json({ error: 'API call failed', detail: e.toString() });
   }
 });
 
