@@ -5,23 +5,27 @@ app.use(express.json());
 
 app.get('/nakshatra', async (req, res) => {
   const today = new Date();
-  const y = today.getFullYear();
-  const m = today.getMonth() + 1;
-  const d = today.getDate();
-  const lat = req.query.lat || 11.3164;     // Default: Nambiyur
-  const lon = req.query.lon || 77.4342;
-  const tz = req.query.tz || 5.5;           // Default: IST
-
-  // Panchang.click API call (works for browserless/server-side fetch)
-  const apiUrl = `https://panchang.click/api/v1/panchang?date=${y}-${m}-${d}&lat=${lat}&lng=${lon}&tz=${tz}`;
-  
+  const payload = {
+    day: today.getDate(),
+    month: today.getMonth() + 1,
+    year: today.getFullYear(),
+    lat: req.query.lat || 11.3164,
+    lon: req.query.lon || 77.4342,
+    tzone: req.query.tz || 5.5
+  };
   try {
-    const resp = await fetch(apiUrl);
+    const resp = await fetch('https://freeastrologyapi.com/api/v1/complete-panchang', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'n0UYvDWD9h1fu0AQwzhA51IMUIABgrFJ87ZamUGH'
+      },
+      body: JSON.stringify(payload)
+    });
     const json = await resp.json();
-    // Return only the nakshatra field for simplicity
-    res.json({ nakshatra: json.nakshatra || json.nakshatra_name || (json.data && json.data.nakshatra && json.data.nakshatra.name) });
+    res.json({ nakshatra: json.nakshatra || json.nakshatra_name });
   } catch (e) {
-    res.json({ error: "API call failed" });
+    res.json({ error: "API call failed", detail: e.toString() });
   }
 });
 
